@@ -7,6 +7,8 @@ declare -A want=([fdfind]=fd-find [fzf]=fzf [lazygit]=lazygit [wl-copy]=wl-clipb
 missing=()
 for cmd in "${!want[@]}"; do command -v "$cmd" >/dev/null || missing+=("${want[$cmd]}"); done
 [ -e /usr/share/terminfo/t/tmux-256color ] || missing+=(ncurses-term)
+# Mason installs PyPI tools (basedpyright, debugpy) into venvs; Debian ships venv separately
+python3 -c "import ensurepip" 2>/dev/null || missing+=(python3-venv)
 if ((${#missing[@]})); then
   echo "[dotfiles] apt install ${missing[*]}"
   sudo apt-get install -y "${missing[@]}"
