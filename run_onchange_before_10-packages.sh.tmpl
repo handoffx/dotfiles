@@ -13,10 +13,18 @@ if ((${#missing[@]})); then
   echo "[dotfiles] apt install ${missing[*]}"
   sudo apt-get install -y "${missing[@]}"
 fi
+# rust-analyzer comes from rustup (rustaceanvim uses it from PATH, not Mason)
+if command -v rustup >/dev/null && ! rustup component list --installed | grep -q '^rust-analyzer'; then
+  rustup component add rust-analyzer
+fi
 {{ else if eq .chezmoi.os "darwin" -}}
 #!/usr/bin/env bash
 set -euo pipefail
 command -v brew >/dev/null || { echo "[dotfiles] install Homebrew first"; exit 1; }
 brew install neovim tmux git ripgrep fd fzf lazygit
 brew install --cask wezterm
+# rust-analyzer comes from rustup (rustaceanvim uses it from PATH, not Mason)
+if command -v rustup >/dev/null && ! rustup component list --installed | grep -q '^rust-analyzer'; then
+  rustup component add rust-analyzer
+fi
 {{ end -}}
