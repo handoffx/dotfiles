@@ -54,3 +54,7 @@ Status lines use two-tone capsules (colored icon segment + surface0 text segment
 `U+E0B6` / `U+E0B4` ends) on a transparent bar, in both tmux and Neovim. Both bars sit at the
 bottom: Neovim's global statusline above tmux's. tmux right side: ZOOM / SYNC / COPY
 indicators (only when active), directory, host, time. Floats and popups use rounded borders.
+
+## License
+
+[MIT](LICENSE)
