@@ -45,6 +45,11 @@ tmux, Neovim and ripgrep are expected to be installed separately on Linux.
 - Neovim >= 0.12
 - ComicShannsMono Nerd Font (installed via `.chezmoiexternal`; CJK falls back to Noto Sans CJK SC / PingFang SC / Microsoft YaHei)
 
+## Formatter fallbacks
+
+- `~/.config/stylua/stylua.toml`: StyLua config for Lua files without a project config
+  (2-space indents; StyLua's own default is tabs). Used through `--search-parent-directories`.
+
 ## Theme
 
 Catppuccin Mocha everywhere: WezTerm built-in scheme, a hand-written tmux status line

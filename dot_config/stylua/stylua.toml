@@ -1,0 +1,6 @@
+# Global StyLua fallback, used when a project has no stylua.toml / .stylua.toml.
+# Picked up by `stylua --search-parent-directories` (none-ls passes it).
+# Without it StyLua defaults to tab indentation.
+column_width = 120
+indent_type = "Spaces"
+indent_width = 2
