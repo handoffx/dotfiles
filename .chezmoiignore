@@ -1,0 +1,11 @@
+README.md
+LICENSE
+
+{{ if eq .chezmoi.os "windows" }}
+.config/tmux
+.local/bin
+{{ end }}
+
+{{ if ne .chezmoi.os "linux" }}
+.local/bin/fd
+{{ end }}

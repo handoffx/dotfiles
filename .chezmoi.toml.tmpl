@@ -1,0 +1,7 @@
+{{- /* Rendered by `chezmoi init` into ~/.config/chezmoi/chezmoi.toml */ -}}
+{{- $light := promptBoolOnce . "light" "Light-use machine (enable only a few languages)" false -}}
+sourceDir = {{ .chezmoi.sourceDir | quote }}
+umask = 0o022
+
+[data]
+  light = {{ $light }}

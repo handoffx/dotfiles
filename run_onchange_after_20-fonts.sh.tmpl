@@ -1,0 +1,5 @@
+{{ if eq .chezmoi.os "linux" -}}
+#!/usr/bin/env bash
+# font: ComicShannsMono Nerd Font
+fc-cache -f "$HOME/.local/share/fonts" >/dev/null
+{{ end -}}

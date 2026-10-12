@@ -1,0 +1,14 @@
+{{- $font := "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/ComicShannsMono.tar.xz" -}}
+{{- if eq .chezmoi.os "linux" }}
+[".local/share/fonts/ComicShannsMono"]
+  type = "archive"
+  url = {{ $font | quote }}
+  include = ["*.otf", "*.ttf"]
+  refreshPeriod = "720h"
+{{- else if eq .chezmoi.os "darwin" }}
+["Library/Fonts/ComicShannsMono"]
+  type = "archive"
+  url = {{ $font | quote }}
+  include = ["*.otf", "*.ttf"]
+  refreshPeriod = "720h"
+{{- end }}

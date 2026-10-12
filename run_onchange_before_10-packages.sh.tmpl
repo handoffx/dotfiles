@@ -1,0 +1,20 @@
+{{ if eq .chezmoi.os "linux" -}}
+#!/usr/bin/env bash
+# Install only missing commands. tmux / nvim / ripgrep are managed by hand
+# (source builds or prebuilt tarballs), so they are not touched here.
+set -euo pipefail
+declare -A want=([fdfind]=fd-find [fzf]=fzf [lazygit]=lazygit [wl-copy]=wl-clipboard)
+missing=()
+for cmd in "${!want[@]}"; do command -v "$cmd" >/dev/null || missing+=("${want[$cmd]}"); done
+[ -e /usr/share/terminfo/t/tmux-256color ] || missing+=(ncurses-term)
+if ((${#missing[@]})); then
+  echo "[dotfiles] apt install ${missing[*]}"
+  sudo apt-get install -y "${missing[@]}"
+fi
+{{ else if eq .chezmoi.os "darwin" -}}
+#!/usr/bin/env bash
+set -euo pipefail
+command -v brew >/dev/null || { echo "[dotfiles] install Homebrew first"; exit 1; }
+brew install neovim tmux git ripgrep fd fzf lazygit
+brew install --cask wezterm
+{{ end -}}
