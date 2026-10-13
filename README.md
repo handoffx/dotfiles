@@ -38,12 +38,52 @@ chezmoi init --source /workspace/debian/dotfiles --apply
 `run_onchange_before_10-packages.sh` installs missing tools (`apt` on Debian, `brew` on macOS).
 tmux, Neovim and ripgrep are expected to be installed separately on Linux.
 
+`chezmoi init` asks two questions, stored in `~/.config/chezmoi/chezmoi.toml`
+(change them later with `chezmoi edit-config`):
+
+- `light`: light-use machine, only lua / python / web / data language groups (default `false`)
+- `lazyxDevDir`: parent dir of a local lazyx-nvim checkout, loaded via lazy.nvim `dev`
+  (empty: install from GitHub)
+
+### macOS
+
+Requires [Homebrew](https://brew.sh). The package script runs
+`brew install neovim tmux git ripgrep fd fzf lazygit` and `brew install --cask wezterm@nightly`.
+
+```sh
+brew install chezmoi
+
+# With a local checkout at ~/.config/dotfiles (and lazyx-nvim at ~/.config/lazyx-nvim)
+chezmoi init --source ~/.config/dotfiles
+chezmoi diff
+chezmoi apply
+
+# Non-interactive init: --promptBool / --promptString are keyed by the prompt text
+chezmoi init --source ~/.config/dotfiles --no-tty \
+  --promptBool 'Light-use machine (enable only a few languages)=false' \
+  --promptString 'Parent dir of a local lazyx-nvim checkout (empty: install from GitHub)=/Users/<you>/.config'
+```
+
+Notes:
+
+- The Nerd Font is extracted to `~/Library/Fonts/ComicShannsMono` and WezTerm reads it through
+  `font_dirs`, because CoreText does not reliably expose it. Other apps may not see the font.
+- CJK falls back to PingFang SC, then Hiragino Sans GB (PingFang is an on-demand asset on recent
+  macOS that WezTerm may not find).
+- `~/Library` and `~/.local` are kept at `0700`.
+- macOS 26+ draws a translucent glass titlebar; WezTerm paints it with the terminal background via
+  `MACOS_USE_BACKGROUND_COLOR_AS_TITLEBAR_COLOR` (nightly only). Use `window_decorations = "RESIZE"`
+  to drop the titlebar instead.
+- WezTerm starts `tmux new-session -A -s main` from `$SHELL`, or `/bin/zsh` when a Dock launch has
+  no `$SHELL`. The tmux server outlives WezTerm; run `tmux kill-server` to pick up shell changes.
+- Run `nvim --headless "+Lazy! sync" +qa` to install plugins before the first interactive start.
+
 ## Requirements
 
 - tmux >= 3.7 (synchronized output, extended keys `csi-u`)
-- WezTerm (nightly is fine)
+- WezTerm (nightly; the macOS package script installs the `wezterm@nightly` cask)
 - Neovim >= 0.12
-- ComicShannsMono Nerd Font (installed via `.chezmoiexternal`; CJK falls back to Noto Sans CJK SC / PingFang SC / Microsoft YaHei)
+- ComicShannsMono Nerd Font (installed via `.chezmoiexternal`; CJK falls back to Noto Sans CJK SC / PingFang SC, Hiragino Sans GB / Microsoft YaHei)
 
 ## Formatter fallbacks
 
