@@ -9,3 +9,7 @@ LICENSE
 {{ if ne .chezmoi.os "linux" }}
 .local/bin/fd
 {{ end }}
+
+{{ if ne .chezmoi.os "darwin" }}
+Library
+{{ end }}
