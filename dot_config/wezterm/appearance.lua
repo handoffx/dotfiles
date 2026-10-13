@@ -7,8 +7,15 @@ function M.apply(config)
   config.color_scheme = "Catppuccin Mocha"
 
   -- ComicShannsMono has no CJK glyphs; fall back to the platform CJK font
-  local cjk = (platform.is_mac and "PingFang SC") or (platform.is_win and "Microsoft YaHei") or "Noto Sans CJK SC"
-  config.font = wezterm.font_with_fallback({ "ComicShannsMono Nerd Font", cjk })
+  -- (PingFang is an on-demand asset on recent macOS that WezTerm may not see; Hiragino Sans GB always ships)
+  local cjk = (platform.is_mac and { "PingFang SC", "Hiragino Sans GB" })
+    or (platform.is_win and { "Microsoft YaHei" })
+    or { "Noto Sans CJK SC" }
+  config.font = wezterm.font_with_fallback({ "ComicShannsMono Nerd Font", table.unpack(cjk) })
+  if platform.is_mac then
+    -- CoreText does not reliably expose the chezmoi-installed font; read it from disk
+    config.font_dirs = { wezterm.home_dir .. "/Library/Fonts/ComicShannsMono" }
+  end
   config.font_size = platform.is_mac and 14 or 12
 
   -- Renderer only: no tabs, splits belong to tmux (no splits at all on Windows)
