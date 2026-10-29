@@ -1,0 +1,78 @@
+#!/usr/bin/python3 -I
+"""Extend the flat right edge of left-cap powerline glyphs so VTE leaves no seam.
+
+VTE left-aligns glyphs in a cell whose width is rounded up to whole pixels, so a
+glyph whose flat edge is on the right stops short of the cell edge. We union a
+rectangle onto each glyph that reaches past the advance width; the extra ink
+lands on the next cell, which has the same background colour.
+
+usage: patch-left-caps <src.otf> <dst.otf> <new family name>
+"""
+import sys
+from fontTools.ttLib import TTFont
+from fontTools.pens.areaPen import AreaPen
+from fontTools.pens.boundsPen import BoundsPen
+from fontTools.pens.t2CharStringPen import T2CharStringPen
+
+LEFT_CAPS = (0xE0B2, 0xE0B6, 0xE0BA, 0xE0BE)
+OVERLAP = 0.20  # extra reach past the advance width, as a fraction of it
+
+src, dst, family = sys.argv[1:4]
+font = TTFont(src)
+cmap = font.getBestCmap()
+glyphset = font.getGlyphSet()
+cff = font["CFF "].cff
+top = cff[cff.fontNames[0]]
+charstrings = top.CharStrings
+
+for cp in LEFT_CAPS:
+    name = cmap[cp]
+    glyph = glyphset[name]
+    advance = font["hmtx"][name][0]
+
+    bounds = BoundsPen(glyphset)
+    glyph.draw(bounds)
+    _, y_min, x_max, y_max = bounds.bounds
+
+    # Under the nonzero fill rule the rectangle must wind the same way as the
+    # glyph, otherwise the overlap would cancel out and punch a hole.
+    area = AreaPen(glyphset)
+    glyph.draw(area)
+    # Start one unit inside the flat edge so the shapes join, and only grow outward:
+    # the curve or slope inside the cell stays untouched.
+    x0, x1 = x_max - 1, advance * (1 + OVERLAP)
+    corners = [(x0, y_min), (x1, y_min), (x1, y_max), (x0, y_max)]
+    if area.value < 0:
+        corners.reverse()
+
+    pen = T2CharStringPen(advance, glyphset)
+    glyph.draw(pen)
+    pen.moveTo(corners[0])
+    for pt in corners[1:]:
+        pen.lineTo(pt)
+    pen.closePath()
+    cs = pen.getCharString(private=charstrings[name].private, globalSubrs=cff.GlobalSubrs)
+    charstrings[name] = cs
+    print(f"U+{cp:04X} {name}: right edge {x_max:.0f} -> {x1:.0f} (advance {advance})")
+
+# Rename so the patched copy never shadows the original font.
+style = font["name"].getDebugName(2) or "Regular"
+ps_family = family.replace(" ", "")
+full = family if style == "Regular" else f"{family} {style}"
+for rec in font["name"].names:
+    if rec.nameID == 1:
+        rec.string = family
+    elif rec.nameID == 3:
+        rec.string = f"{ps_family}-{style}-patched"
+    elif rec.nameID == 4:
+        rec.string = full
+    elif rec.nameID == 6:
+        rec.string = f"{ps_family}-{style}"
+    elif rec.nameID in (16, 21):
+        rec.string = family
+top.FamilyName = family
+top.FullName = full
+cff.fontNames[0] = f"{ps_family}-{style}"
+
+font.save(dst)
+print("saved", dst)
